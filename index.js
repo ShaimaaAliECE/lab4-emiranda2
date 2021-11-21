@@ -12,7 +12,7 @@ app.get('/questions', (request, response) => {
     for (q of questionList)
     {
         content += '<div>';
-        content += p.stem + '<br/>' + p.options + '<br/>' + p.answerIndex 
+        content += q.stem + '<br/>' + q.options + '<br/>' + q.answerIndex 
         //content += '<br>'
         content += '</div>'
         content += '<br/>';
