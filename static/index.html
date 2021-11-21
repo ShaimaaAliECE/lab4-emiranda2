@@ -8,5 +8,37 @@
 </head>
 <body>
     <h1>Ethan's Quiz</h1>
+    <a href='javascript:getQuestions()'> Click here to take the quiz!</a>
+    <div id='qDiv'></div>
 </body>
+<script>
+function getQuestions()
+    {   //'/products'
+        let xReq = new XMLHttpRequest();
+        xReq.onreadystatechange = displayQuestions;
+
+        xReq.open('GET','/questionsInJson',true);
+        xReq.send();
+    }
+
+    function displayQuestions()
+    {
+        if (this.readyState == 4 && this.status == 200)
+        {
+            let qDiv = document.getElementById('qDiv');
+            //qDiv.innerHTML = this.responseText;
+            let questionList = JSON.parse(this.responseText);
+            let content ='';
+            for (q of questionList)
+            {
+                content += '<div>';         
+                content += q.stem + '<br/>' + q.options + '<br/>' + q.answerIndex 
+                content += '</div>'
+                content += '<br/>';
+            }
+            qDiv.innerHTML = content;
+           // console.log(typeof JSON.parse(this.responseText))
+        }
+    }
+</script>
 </html>
