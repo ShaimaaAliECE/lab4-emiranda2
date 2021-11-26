@@ -8,37 +8,149 @@
 </head>
 <body>
     <h1>Ethan's Quiz</h1>
-    <a href='javascript:getQuestions()'> Click here to take the quiz!</a>
+    <a id = 'link' href='javascript:getQuestions()'> Click here to take the quiz!</a>
     <div id='qDiv'></div>
 </body>
 <script>
+let quizLink = document.getElementById('link');
+quizLink.onclick = getQuestions;
+
+
+//function to get questions from the JSON via index.js
 function getQuestions()
     {   //'/products'
-        let xReq = new XMLHttpRequest();
-        xReq.onreadystatechange = displayQuestions;
 
-        xReq.open('GET','/questionsInJson',true);
+    //when this is executed remove the hyperlink
+    quizLink.remove();
+    //xmlhttprequest to get the questions from index.js
+    let xReq = new XMLHttpRequest();
+        xReq.onreadystatechange = displayQuestions;
+        
+        //open the questions
+        xReq.open('GET', '/questionsInJson',true);
         xReq.send();
     }
 
+
+    //function to display the questionms
     function displayQuestions()
     {
-        if (this.readyState == 4 && this.status == 200)
+        if(this.readyState == 4 && this.status == 200)
         {
+            //create a div for the questions
             let qDiv = document.getElementById('qDiv');
-            //qDiv.innerHTML = this.responseText;
+            //qdiv.innerHTML = this.responseText;
+            //parse the data from the JSON
             let questionList = JSON.parse(this.responseText);
-            let content ='';
-            for (q of questionList)
+            let content = "";
+            let qIndex = 0;
+
+            //display grade 
+            content += '<form action=javascript:getGrade()>';
+
+                //loop through the questions
+            for(q of questionList)
             {
-                content += '<div>';         
-                content += q.stem + '<br/>' + q.options + '<br/>' + q.answerIndex 
-                content += '</div>'
-                content += '<br/>';
+                //print each question
+                content += '<div>' + q.stem + '</div>';
+
+                let aIndex = 0;
+                
+                //loop through the options for each question
+                for(i of q.options)
+                {
+
+                    //for(i of q.options){
+                //content += '<input type = "radio">' + q.options + '<br/>' 
+
+                //for each option print a radio button and call the check answer function when clicked
+                    content += '<input type="radio" id="answer ' + i + '" name="' + q.stem + '" onclick=checkAnswer(' + qIndex + ',' + aIndex + ')>';
+                    content += '<label for="answer ' + i + '">' + i + '</label></br>';
+                    //increment the anser index
+                    aIndex++;
+                }
+                //create a div for the feedback for each question
+                content += '</br><div id=\'aDiv' + qIndex + '\' name=answers></div>';
+                qIndex++;
             }
+
+            //submit button to submit answers
+            content += '</br><input type="submit" value="Submit" id="submit">';
+            content += '</form></br>';
+
+
+            //create a div to display the grade
+            content += '<div id=\'gDiv\'></div></br>';
+
             qDiv.innerHTML = content;
-           // console.log(typeof JSON.parse(this.responseText))
+
+            //console.log(typeof JSON.parse(this.responseText))
         }
     }
+
+
+    //function to check answer 
+    //called each time a radio button is clicked
+    function checkAnswer(questionIndex,answerIndex)
+    {
+        //xmlhttp rquest to get the ansers via index.js
+        let xReq = new XMLHttpRequest();
+        xReq.onreadystatechange = displayAnswer;
+        
+        xReq.open('GET', `/answersInJson?q=${questionIndex}&a=${answerIndex}`,true);
+        xReq.send();
+    }
+
+
+    //function to show the answer 
+    function displayAnswer()
+    {
+        if(this.readyState == 4 && this.status == 200)
+        {
+            const choice = this.responseText.split(" ")
+
+            let aDiv = document.getElementById('aDiv' + choice[1]);
+            aDiv.innerHTML = choice[0];
+        }
+    }
+
+        //function tio display the gradwe
+        function  displayGrade()
+    {
+        if(this.readyState == 4 && this.status == 200)
+        {
+            let gDiv = document.getElementById('gDiv');
+            //variables to count corect answers over all
+            let correct = 0;
+            let all = 0;
+
+            let aButtons = document.getElementsByName("answers");
+            //count the amount of right answers and all questions
+            for(let i = 0; i < aButtons.length; i++){
+                if(aButtons[i].innerHTML == "Correct!")
+                    correct++;
+                all++;
+            }
+
+            //calculate grtade and display in the grade div
+            gDiv.innerHTML = "Your grade is: " + correct / all * 100 + "%!";
+        }
+    }
+
+    //function to get grade called when quiz is submitted
+    function getGrade()
+    {
+        let submitBtn = document.getElementById('submit');
+        submitBtn.remove();
+
+        let xReq = new XMLHttpRequest();
+        xReq.onreadystatechange = displayGrade;
+
+        xReq.open('GET', `/`, true);
+        xReq.send();
+    }
+
+
+
 </script>
 </html>
